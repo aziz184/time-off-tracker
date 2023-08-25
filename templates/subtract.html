@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 
 {% block title %}
-    Subtract Used Time-Off
+    ajouter un conjé
 {% endblock %}
 
 {% block header %}
@@ -9,40 +9,138 @@
 {% endblock %}
 
 {% block main %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const searchInput = document.getElementById('search');
+            const employeeOptions = document.querySelectorAll('.employee-option');
+            const optionsList = document.querySelector('.options');
+            const timeOffForm = document.getElementById('timeOffForm');
+            const startDateInput = document.getElementById('start');
+            const endDateInput = document.getElementById('end');
+            const joursInput = document.getElementById('hours');
+
+            // Function to calculate the difference in days between two dates
+            function calculateDateDifference() {
+                const startDate = new Date(startDateInput.value);
+                const endDate = new Date(endDateInput.value);
+                const timeDiff = endDate.getTime() - startDate.getTime();
+                const diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+                joursInput.value = diffDays;
+            }
+
+            // Event listeners for date inputs to calculate the difference
+            startDateInput.addEventListener('input', calculateDateDifference);
+            endDateInput.addEventListener('input', calculateDateDifference);
+
+            searchInput.addEventListener('input', function() {
+                const searchValue = searchInput.value.toLowerCase();
+                let foundMatch = false;
+
+                employeeOptions.forEach((option) => {
+                    const optionText = option.textContent.toLowerCase();
+
+                    if (optionText.includes(searchValue)) {
+                        option.style.display = 'block';
+                        foundMatch = true;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+
+                // Show or hide the list based on input
+                if (foundMatch) {
+                    optionsList.style.display = 'block';
+                } else {
+                    optionsList.style.display = 'none';
+                }
+            });
+
+            employeeOptions.forEach((option) => {
+                option.addEventListener('click', function() {
+                    const selectedEmployee = option.textContent;
+                    searchInput.value = selectedEmployee;
+                    optionsList.style.display = 'none';
+
+                    // Fill the form with the selected employee's details
+                    const employeeSelect = document.getElementById('employee');
+                    employeeSelect.value = selectedEmployee;
+                    timeOffForm.style.display = 'block';
+                });
+            });
+
+            // Close the list when clicking inside the list
+            optionsList.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+
+            // Close the list when clicking anywhere outside the list or input
+            document.addEventListener('click', function(event) {
+                if (!optionsList.contains(event.target) && event.target !== searchInput) {
+                    optionsList.style.display = 'none';
+                }
+            });
+        });
+    </script>
     <div class="formdiv">
-        <form action="/subtract" method="POST">
+        <form id="timeOffForm" action="/subtract" method="POST" style="display: none;">
             <div class="form-group">
-                <label for="employee">Select Employee</label>
+                <label for="employee">Selecter le medecin</label>
                 <select class="form-control" name="employee" id="employee" required>
-                    <option value="" disabled selected>Employee Name</option>
+                    <option value="" disabled selected>nom</option>
                     {% for row in list %}
                         <option value= "{{row['fullname']}}"> {{row['fullname']}} </option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label for="hours">Hours Used</label>
+                <label for="hours">jours </label>
                 <input class="form-control" name="hours" id="hours" placeholder="Hours" type="number" min="0" required>
             </div>
             <div class="form-group">
-                <label for="start">Start Date</label>
+                <label for="start"> Date debut</label>
                 <input class="form-control" name="start" id="start" type="date" required>
             </div>
             <div class="form-group">
-                <label for="end">End Date</label>
+                <label for="end"> Date fin</label>
                 <input class="form-control" name="end" id="end" type="date" required>
             </div>
             <div class="form-group">
-                <label for="reason">Reason</label>
-                <input class="form-control" name="reason" id="reason" type="text" placeholder="Sick time, vacation, etc." required>
+                <label>Reason</label><br>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="reason" id="reasonExceptionnel" value="exceptionnel" required>
+                    <label class="form-check-label" for="reasonExceptionnel">Exceptionnel</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="reason" id="reasonMaladie" value="maladie" required>
+                    <label class="form-check-label" for="reasonMaladie">Maladie</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="reason" id="reasonRepos" value="repos" required>
+                    <label class="form-check-label" for="reasonRepos">Repos</label>
+                </div>
             </div>
-             <div class="form-group">
+            <div class="form-group" style="display: none;">
                 <input type="radio" id="paid" name="type" value="paid" required>
                 <label for="paid"> Paid time-off </label>
-                <input type="radio" id="unpaid" name="type" value="unpaid" required>
+                <input type="radio" id="unpaid" name="type" value="unpaid" required checked>
                 <label for="unpaid"> Unpaid time-off</label><br>
             </div>
-        <button class="btn btn-primary" type="submit">Submit</button>
+            
+            <button class="btn btn-primary" type="submit">Submit</button>
         </form>
     </div>
+
+    <div class="formdiv">
+        <label for="search">rechercher medecin</label>
+        <input type="text" id="search" placeholder="Start typing to search for employees" class="form-control">
+    </div>
+
+
+    <ul class="options" style="display: none;">
+        {% for row in list %}
+            <li class="employee-option">{{ row['fullname'] }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

@@ -9,18 +9,57 @@
 {% endblock %}
 
 {% block main %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('search');
+            const employeeOptions = document.querySelectorAll('.employee-option');
+            const form = document.querySelector('form');
+            const optionsList = document.querySelector('.options');
+
+            searchInput.addEventListener('input', function() {
+                const searchValue = searchInput.value.toLowerCase();
+
+                employeeOptions.forEach((option) => {
+                    const optionText = option.textContent.toLowerCase();
+                    if (optionText.includes(searchValue)) {
+                        option.style.display = 'block';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+
+                // Show the options list when the user starts typing
+                optionsList.style.display = 'block';
+            });
+
+            employeeOptions.forEach((option) => {
+                option.addEventListener('click', function() {
+                    const selectedEmployee = option.textContent;
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'employee';
+                    input.value = selectedEmployee;
+                    form.appendChild(input);
+
+                    // Submit the form when an employee is selected
+                    form.submit();
+                });
+            });
+        });
+    </script>
+
     <div class="formdiv">
         <form action="/totals" method="POST">
             <div class="form-group">
-                <label for="employee">Select Employee</label>
-                <select class="form-control" name="employee" id="employee" required>
-                    <option value="" disabled selected>Employee Name</option>
-                    {% for row in list %}
-                        <option value= "{{row['fullname']}}"> {{row['fullname']}} </option>
-                    {% endfor %}
-                </select>
+                <label for="search">Search Employee</label>
+                <input type="text" id="search" placeholder="Search Employee" class="form-control">
             </div>
-            <button class="btn btn-primary" type="submit">Submit</button>
         </form>
     </div>
+
+    <ul class="options" style="display: none;">
+        {% for row in list %}
+            <li class="employee-option">{{ row['fullname'] }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

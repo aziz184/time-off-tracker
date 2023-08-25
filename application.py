@@ -151,7 +151,7 @@ def subtract():
         hours = request.form.get("hours")
         start = request.form.get("start")
         end = request.form.get("end")
-        reason = request.form.get("reason")
+        reason = request.form.POST("reason")
         type = request.form.get("type")
 
         # check for valid input
